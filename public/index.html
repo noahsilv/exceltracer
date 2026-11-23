@@ -1,0 +1,15 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Formula Trace</title><link rel="stylesheet" href="pane.css">
+<script src="https://appsforoffice.microsoft.com/lib/1/hosted/office.js"></script><script type="module" src="build/pane.js"></script></head>
+<body><main><nav aria-label="Explorer commands"><button id="inputs" title="Ctrl+Q">Precedents</button><button id="dependents" title="Ctrl+Shift+Q">Dependents</button><button id="map" title="Ctrl+Shift+M">Map</button></nav>
+<label id="tree-option"><input id="expression-view" type="checkbox"> Include formula components</label>
+<div id="step" role="status"></div>
+<div id="scroll"><table aria-label="Formula components"><thead><tr><th>Element</th><th>Info</th><th>Value</th><th>Location</th></tr></thead><tbody id="rows"></tbody></table></div>
+<div id="pages" hidden><button id="prev-page">Previous page</button> <button id="next-page">Next page</button></div>
+<code id="formula" aria-label="Formula"></code>
+<code id="target-formula" aria-label="Selected reference formula"></code>
+<footer><button id="back" disabled>Back</button><button id="close">Close</button></footer>
+<p id="status" role="status">Connecting to Excel…</p>
+<details id="legend"><summary>Map colors</summary><p>Choose colors for the next map. Clear a category to keep its original fill.</p><div id="colors"></div></details>
+<details id="keys"><summary>Keyboard shortcuts</summary><p>Ctrl+Q explores precedents. Ctrl+Shift+Q explores dependents. Ctrl+Shift+M toggles the active sheet’s map. Up and Down visit reference cells. Right follows the selected reference and Left returns to that step. Home selects the current trace root. With formula components shown, Right and Left expand or collapse the expression tree. Esc returns to the root and closes. Enter closes at the previewed cell. Ctrl+Backspace returns inside the pane. From the worksheet use Ctrl+Alt+B to return.</p><form id="bindings" hidden></form></details>
+</main></body></html>

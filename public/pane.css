@@ -1,0 +1,16 @@
+:root {font:13px/1.4 "Segoe UI",system-ui,sans-serif; color:#162331; background:#f4f5f6;}
+body {margin:0} main {padding:8px;display:grid;gap:8px;} nav,footer {display:flex;gap:5px;flex-wrap:wrap} footer {justify-content:flex-end}
+button,summary {font:inherit;cursor:pointer} button {padding:3px 9px;border:1px solid #a7b1bd;border-radius:3px;background:#fff;color:inherit}
+button[aria-pressed=true]{background:#d6e7fb;border-color:#638ac0} button:focus-visible,summary:focus-visible{outline:2px solid #2463a1} button:disabled{opacity:.5}
+#scroll{height:clamp(165px,50vh,580px);overflow:auto;background:white;border:1px solid #a2adba}
+table{border-collapse:separate;border-spacing:0;width:100%;font-size:12px;white-space:nowrap} th,td{text-align:left;padding:3px 5px}
+th{position:sticky;top:0;background:#edf0f4;border-right:1px solid #c9d0d8;font-weight:600;z-index:1} th:nth-child(3),td:nth-child(3){text-align:right}
+tbody tr{cursor:default;} tbody tr[aria-current=true]{background:#1063ae;color:white} tbody tr:focus{outline:2px solid #173954;outline-offset:-2px}
+.twisty{display:inline-block;width:14px;text-align:center;cursor:pointer}
+#formula{min-height:3.4rem;white-space:pre-wrap;overflow-wrap:anywhere;padding:6px;background:white;border:1px solid #a2adba}
+mark{background:#fff2ac;color:#142432} p{margin:0;color:#405366} details{font-size:12px} details p{padding:6px 0} #colors{display:grid;grid-template-columns:repeat(auto-fit,minmax(125px,1fr));gap:4px;margin:6px 0}
+#colors{grid-template-columns:1fr} #colors label{display:flex;gap:6px;align-items:center} input[type=color]{width:30px;height:22px;padding:0;border:1px solid #a2adba}
+
+main{grid-template-columns:minmax(0,1fr)} #bindings label{display:flex;justify-content:space-between;align-items:center;gap:6px;margin:4px 0} #bindings input{max-width:11em}
+
+#tree-option{display:flex;align-items:center;gap:4px} #step{font-weight:600;overflow-wrap:anywhere} #scroll[data-direction=dependents] tr[aria-current=true]{background:#197147;color:white} #target-formula{white-space:pre-wrap;overflow-wrap:anywhere;color:#405366;padding:0 6px} #target-formula:empty{display:none}

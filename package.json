@@ -1,0 +1,28 @@
+{
+  "name": "formula-trace",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "build": "tsc",
+    "test": "npm run build && node --test tests/*.test.mjs",
+    "validate": "office-addin-manifest validate manifest.xml",
+    "dev-server": "node scripts/serve.mjs",
+    "prestart": "npm run build && office-addin-dev-certs install",
+    "start": "office-addin-debugging start manifest.xml desktop --app excel --no-debug --no-live-reload --dev-server-port 3000 --document examples/Debt-Model.xlsx",
+    "stop": "office-addin-debugging stop manifest.xml",
+    "build:portable": "npm run build && node scripts/build-portable.mjs"
+  },
+  "devDependencies": {
+    "@types/office-js": "^1.0.618",
+    "esbuild": "^0.27.7",
+    "node-forge": "^1.4.4",
+    "office-addin-debugging": "^7.0.1",
+    "office-addin-dev-certs": "^3.0.1",
+    "office-addin-manifest": "^3.0.1",
+    "typescript": "^5.9.3"
+  }
+}

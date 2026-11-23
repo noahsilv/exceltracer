@@ -1,0 +1,70 @@
+{
+  "actions": [
+    {
+      "id": "TraceInputs",
+      "type": "ExecuteFunction",
+      "name": "${resource.TraceInputsName}"
+    },
+    {
+      "id": "TraceUsers",
+      "type": "ExecuteFunction",
+      "name": "${resource.TraceUsersName}"
+    },
+    {
+      "id": "ToggleMap",
+      "type": "ExecuteFunction",
+      "name": "${resource.ToggleMapName}"
+    },
+    {
+      "id": "ReturnCell",
+      "type": "ExecuteFunction",
+      "name": "${resource.ReturnCellName}"
+    }
+  ],
+  "shortcuts": [
+    {
+      "action": "TraceInputs",
+      "key": {
+        "default": "Ctrl+Q",
+        "mac": "Ctrl+Q"
+      }
+    },
+    {
+      "action": "TraceUsers",
+      "key": {
+        "default": "Ctrl+Shift+Q",
+        "mac": "Ctrl+Shift+Q"
+      }
+    },
+    {
+      "action": "ToggleMap",
+      "key": {
+        "default": "Ctrl+Shift+M",
+        "mac": "Ctrl+Shift+M"
+      }
+    },
+    {
+      "action": "ReturnCell",
+      "key": {
+        "default": "Ctrl+Alt+B",
+        "mac": "Ctrl+Alt+B"
+      }
+    }
+  ],
+  "resources": {
+    "default": {
+      "TraceInputsName": {
+        "value": "Formula Trace \u2014 Explore precedents"
+      },
+      "TraceUsersName": {
+        "value": "Formula Trace \u2014 Explore dependents"
+      },
+      "ToggleMapName": {
+        "value": "Formula Trace \u2014 Toggle formula map"
+      },
+      "ReturnCellName": {
+        "value": "Formula Trace \u2014 Return to explored cell"
+      }
+    }
+  }
+}
