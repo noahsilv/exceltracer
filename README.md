@@ -2,7 +2,7 @@
 
 Explore a formula with the keyboard. Control+Q lists its precedents and Control+Shift+Q lists its dependents. Up and Down activate each referenced sheet and select the relevant cell or range. Right follows a reference one level deeper. Left returns to the previous list at the step you left. Control+Shift+M toggles a formula map on the active sheet.
 
-**Arixcel parity is incomplete.** The [feature audit and desktop acceptance cases](PARITY.md) list the implemented behaviors, missing commands and open Mac checks.
+See the [feature status and desktop test cases](TESTING.md) for supported workflows and open checks.
 
 ## Run on a Mac
 
