@@ -5,11 +5,13 @@ import { Navigator } from '../public/build/navigation.js';
 
 function mockExcel() {
   let active;
+  let selection;
   let nextError;
   const inputs = new Map(), dependents = new Map(), sheets = new Map(), cells = new Map();
   function cell(sheetId, address, value, formula = '', rows = 1, columns = 1) {
     if (!sheets.has(sheetId)) sheets.set(sheetId, {
       id: sheetId, name: sheetId, load() {}, activate() {},
+      getRanges(a) {return selectionOf(a.split(',').map(v=>this.getRange(v)));},
       getRange(a) { const r = cells.get(sheetId + '!' + a); if (!r) throw Error('Missing cell'); return r; }
     });
     const key = sheetId + '!' + address;
@@ -17,12 +19,15 @@ function mockExcel() {
       address: "'" + sheetId.replaceAll("'", "''") + "'!" + address,
       worksheet: sheets.get(sheetId), rowCount: rows, columnCount: columns,
       text: [[String(value)]], formulas: [[formula || value]], load() {},
-      select() { active = this; }, getCell() { return cells.get(sheetId + '!' + address.split(':')[0]); },
+      select() { active = this; selection = undefined; }, getCell() { return cells.get(sheetId + '!' + address.split(':')[0]); },
       getDirectPrecedents() { return related(inputs.get(key)); },
       getDirectDependents() { return related(dependents.get(key)); }
     };
     cells.set(key, result);
     return result;
+  }
+  function selectionOf(items) {
+    return {worksheet:items[0].worksheet, areas:{items,load(){}}, select(){active=items[0];selection=items;}};
   }
   function related(items) {
     if (!items) nextError = Object.assign(Error('No links'), {code:'ItemNotFound'});
@@ -37,10 +42,10 @@ function mockExcel() {
   inputs.set('Debt!B4',[interest,principal]);
   dependents.set('Debt!B2',[debt]);
   globalThis.Excel = {run: fn => fn({
-    workbook:{getSelectedRange:() => active, worksheets:{getItem:id => sheets.get(id)}},
+    workbook:{getSelectedRanges:() => selectionOf(selection || [active]), worksheets:{getItem:id => sheets.get(id)}},
     sync:async () => { if (nextError) { const error = nextError; nextError = undefined; throw error; } }
   })};
-  return {cell, inputs, sheets, active:() => active};
+  return {cell, inputs, dependents, sheets, active:() => active, selected:()=>selection};
 }
 
 test('walk Summary → Debt → interest, then restore both cells and the original mode',async () => {
@@ -128,4 +133,19 @@ test('returning a level remembers which cross-sheet sibling was followed',async(
   assert.equal(nav.current.sheet,'Summary');
   // The pane resumes its preview on Debt without briefly selecting Summary.
   assert.equal(mock.active().worksheet.id,'Debt');
+});
+
+test('disjoint trace keeps every source, ignores empty branches and restores the original selection', async () => {
+  const mock = mockExcel();
+  const debt = mock.sheets.get('Debt'), summary = mock.sheets.get('Summary').getRange('B2');
+  mock.cell('Debt','C8',7);
+  mock.dependents.set('Debt!B3',[debt.getRange('B4'),summary]);
+  debt.getRanges('B2,C8,B3').select();
+  const nav = new Navigator(inspect);
+  await nav.refresh('dependents');
+  assert.equal(nav.current.address,'B2,C8,B3');
+  assert.deepEqual(nav.current.related.map(r=>[r.sheet,r.label]),[['Debt','B4'],['Summary','B2']]);
+  await nav.jump(nav.current.related[1]);
+  await nav.back();
+  assert.deepEqual(mock.selected().map(r=>r.address),["'Debt'!B2","'Debt'!C8","'Debt'!B3"]);
 });

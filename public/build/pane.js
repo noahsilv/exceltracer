@@ -125,7 +125,7 @@ async function preview(row) {
     if (row.ref) {
         try {
             const result = await selectReference(row.ref);
-            if (row !== tree || !row.ref.address.includes(':'))
+            if (row !== tree || !/[,:]/.test(row.ref.address))
                 row.value = result.value;
             if (row !== tree && result.formula) {
                 byId('target-formula').textContent = (row.ref.address.includes(':') ? 'First cell: ' : '') + result.formula;
@@ -240,9 +240,9 @@ function move(key) {
         return preview(next);
 }
 document.addEventListener('keydown', e => {
-    if (e.altKey || (e.target instanceof Element && e.target.closest('input,textarea,select')))
+    if (e.metaKey || e.altKey || (e.target instanceof Element && e.target.closest('input,textarea,select')))
         return;
-    const ctrl = e.ctrlKey || e.metaKey;
+    const ctrl = e.ctrlKey;
     const key = e.key.toLowerCase();
     let action;
     if (ctrl && key === 'q')

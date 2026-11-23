@@ -1,0 +1,35 @@
+# Arixcel parity audit for Excel on Mac
+
+**Acceptance result, 23 November 2026 — incomplete.** Formula Trace implements parts of formula exploration, direct dependency tracing and formula mapping. Three other documented feature families have no implementation. The highest-priority open test is whether a user can keep pressing the arrow keys in desktop Excel for Mac while the workbook changes sheets beneath the pane.
+
+The comparison baseline is the supplied Arixcel Explorer Windows MSI, product version 9.0.9623.19616, SHA-256 `ddf900fabd9225d375b576a70d10ebc5733aa856adad4cb3e8f3eac46aef00d1`. Its Windows VSTO components identify the original host technology. The expected behaviors below come from Arixcel’s published guides. The guides are not version-pinned. Static inspection cannot establish every option, key sequence, or focus transition in the installed product. Formula Trace uses its own Office.js implementation.
+
+| Workflow | What this implementation does | What remains for parity |
+| --- | --- | --- |
+| [Explore a formula](https://www.arixcel.com/explorer/functions/explore) | Displays the source formula and formatted result. Can expand common operators, parentheses and function arguments, and navigate matching range references. | Evaluate intermediate components, show the selected logical branch, resolve lookup and dynamic reference targets, identify matched filter cells, expand named formulas, LAMBDAs and validation, select references from the displayed formula, edit with F2 and undo, navigate other open workbooks and keep independent explorer windows. |
+| [Trace precedents and dependents](https://www.arixcel.com/explorer/functions/dependents) | Accepts a cell, block or disjoint worksheet selection. Lists Excel’s direct relationships, previews each address with the worksheet selection, drills deeper, and returns to the prior sibling. | Match grouping by formula and ordering against the Windows reference. Add multi-select inside the explorer, simultaneous customizable source and reference highlights, Control+Arrow navigation across corners and disjoint blocks, and the configurable close/focus behavior and 100-exploration return history. Confirm uninterrupted keyboard focus in desktop Excel for Mac. |
+| [Map formulas](https://www.arixcel.com/explorer/functions/map) | Maps the active sheet by copied direction, unique formula, reference type or input type. Users can set colors or disable categories. Toggling removes the add-in’s tagged conditional formatting. | Match grouped-sheet operation, category choices including validation and empty cells, and original palette behavior. Compare named, structured and external references against the reference tool. Check color precedence alongside existing conditional formats and verify restoration after saving, quitting and reopening Excel. |
+| [Compare ranges, sheets and workbooks](https://www.arixcel.com/explorer/functions/compare) | No comparison command. | Set reference and comparators, compare formulas or values, ignore inputs, align insertions, navigate difference blocks, switch sides, copy edits, undo and export a report. |
+| [Analyze calculation flow](https://www.arixcel.com/explorer/functions/flow) | No calculation-flow command. | Analyze scope and focus area, show inside and outside inflows and outflows, distinguish inputs, calculations, outputs and orphan formulas, and highlight, retain or clear those groups. |
+| [Configure utility commands](https://www.arixcel.com/explorer/functions/shortcuts) | The add-in exposes bindings for four worksheet commands. | Implement Arixcel’s configurable commands and ribbon settings. These include Smart Fill, Paste Duplicate, Copy Sum, Replace Formulas, Jump to, format cycling, and sheet and window controls. Each command needs its own shortcut, configuration and side-effect checks. |
+
+## Evidence and release checks
+
+- The adapter tests exercise single-cell, block and disjoint selections, drilling and returning, errors, paging, and scroll requests. The map tests exercise classification, rule cleanup and preservation of other rules in a simulated workbook.
+- The browser test loads the compiled HTML and JavaScript over HTTPS. With a simulated Office host it sends successive arrow keys through a cross-sheet trace, checks the selected address and focused row, drills down and returns to the same sibling, traces both dependents, closes and returns to the original cell.
+- The Mac launcher test checks the sideload manifest and real HTTPS response in a temporary home directory. On macOS it uses Apple’s certificate verifier. The test substitutes for interactive Keychain trust and the Excel launch. The workflow runs the browser test in WebKit on both Mac processor architectures. [Mac workflow](.github/workflows/test.yml)
+- Desktop checks still require Arixcel on Windows and Formula Trace in Microsoft 365 desktop Excel for Mac. Office.js direct dependency APIs are scoped to the active workbook. Cross-workbook navigation and separate explorer windows need demonstrated designs before feature equivalence can be promised. [Microsoft’s dependency API limits](https://learn.microsoft.com/en-us/office/dev/add-ins/excel/excel-add-ins-ranges-precedents-dependents)
+
+## First desktop comparison
+
+Use a fresh copy of the same sample workbook on each platform. Record the product and Excel builds and whether a shortcut conflict prompt appeared. For each keystroke capture the active workbook, sheet, selected address, focused window or pane, displayed formula, highlight colors and whether the next keystroke works without a mouse.
+
+| Case | Observable result to check |
+| --- | --- |
+| Precedents of Summary!B2 | Control+Q exposes Cash Flow!B4 (150) and Debt!B4 (100). Arrow through both, follow Debt!B4 into its inputs, and return to the same sibling. Check the active sheet and selection after every arrow and record any ordering difference. |
+| Dependents of Summary!B2 | Control+Shift+Q exposes Cash Flow!B7 and Debt!B7. Move forward and backward. Check that the source formula stays visible and the grid highlights the expected B7 on each sheet. |
+| Multiple source areas | On Debt select B2, B3 and an unrelated blank cell. Trace dependents. Both B4 and B5 use the inputs. Inspect grouping, include any shared dependent once, and verify Home restores the source areas. |
+| Close and return | Run separate trials for Enter and Escape on a cross-sheet preview. Record the resulting selection and focus and the key needed to return from the grid. Formula Trace currently uses Control+Option+B on the Mac grid and Control+Backspace inside the pane. |
+| Map and restore | On Map example compare C4 and D4 (copied formulas) with E4 (hardcoded). Record the categories and colors. Save with the map on, quit, reopen and remove it. E4 should retain its original pink fill and bold type. Repeat on grouped sheets and with pre-existing conditional formats. |
+
+An observed Windows reference run, matching desktop Mac observations, and passing checks for the missing features are all outstanding. A successful CI run covers only the automated checks above.

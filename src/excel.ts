@@ -16,31 +16,43 @@ function isMissingRelationship(error: unknown) {
 export async function inspect(mode: Mode, target?: CellRef, selectTarget = true): Promise<Trace> {
   return Excel.run(async context => {
     const workbook = context.workbook;
-    const cell = target
-      ? workbook.worksheets.getItem(target.sheetId).getRange(target.address)
-      : workbook.getSelectedRange();
-    cell.load('address,rowCount,columnCount');
-    const firstCell = cell.getCell(0, 0);
-    firstCell.load('text,formulas');
-    cell.worksheet.load('id,name');
+    const selection = target
+      ? workbook.worksheets.getItem(target.sheetId).getRanges(target.address)
+      : workbook.getSelectedRanges();
+    selection.worksheet.load('id,name');
+    selection.areas.load('items/address,items/rowCount,items/columnCount');
     await context.sync();
 
-    const single = cell.rowCount === 1 && cell.columnCount === 1;
-    const first = single && firstCell.formulas[0][0];
-    const trace: Trace = {
-      sheetId: cell.worksheet.id, sheet: cell.worksheet.name, address: localAddress(cell),
-      formula: typeof first === 'string' && first.startsWith('=') ? first : '',
-      value: single ? firstCell.text[0][0] : cell.rowCount + ' × ' + cell.columnCount, related: [], total: 0
-    };
-    let areas: Excel.Range[] = [];
-    try {
-      const links = mode === 'inputs' ? cell.getDirectPrecedents() : cell.getDirectDependents();
-      links.ranges.load('items/address,items/rowCount,items/columnCount,items/worksheet/id,items/worksheet/name');
+    const sources = selection.areas.items;
+    const first = sources[0];
+    const single = sources.length === 1 && first.rowCount === 1 && first.columnCount === 1;
+    if (single) {
+      first.load('text,formulas');
       await context.sync();
-      areas = links.ranges.items;
-    } catch (error) {
-      if (!isMissingRelationship(error)) throw error;
     }
+    const expression = single ? first.formulas[0][0] : undefined;
+    const trace: Trace = {
+      sheetId: selection.worksheet.id, sheet: selection.worksheet.name,
+      address: sources.map(localAddress).join(','),
+      formula: typeof expression === 'string' && expression.startsWith('=') ? expression : '',
+      value: single ? first.text[0][0] : sources.length === 1
+        ? first.rowCount + ' × ' + first.columnCount : sources.length + ' selected areas',
+      related: [], total: 0
+    };
+    const unique = new Map<string,Excel.Range>();
+    for (const source of sources) {
+      // Excel signals an empty result with ItemNotFound at sync. Isolate each query so
+      // an unrelated selected cell cannot discard the other cells' dependencies.
+      try {
+        const links = mode === 'inputs' ? source.getDirectPrecedents() : source.getDirectDependents();
+        links.ranges.load('items/address,items/rowCount,items/columnCount,items/worksheet/id,items/worksheet/name');
+        await context.sync();
+        for (const area of links.ranges.items) unique.set(area.address, area);
+      } catch (error) {
+        if (!isMissingRelationship(error)) throw error;
+      }
+    }
+    const areas = [...unique.values()];
     trace.total = areas.length;
     // Keep large blocks intact. Fetch display text only for the first cell of each visible area.
     const visible = areas.slice(0, 100);
@@ -64,8 +76,8 @@ export async function inspect(mode: Mode, target?: CellRef, selectTarget = true)
       };
     });
     if (target && selectTarget) {
-      cell.worksheet.activate();
-      cell.select();
+      selection.worksheet.activate();
+      selection.select();
       await context.sync();
     }
     return trace;
@@ -75,8 +87,10 @@ export async function inspect(mode: Mode, target?: CellRef, selectTarget = true)
 export async function selectReference(ref: CellRef) {
   return Excel.run(async ctx => {
     const sheet = ctx.workbook.worksheets.getItem(ref.sheetId);
-    const range = sheet.getRange(ref.address);
-    const first = range.getCell(0, 0);
+    const [leading, second] = ref.address.split(',', 2);
+    const leadingRange = sheet.getRange(leading);
+    const range = second ? sheet.getRanges(ref.address) : leadingRange;
+    const first = leadingRange.getCell(0, 0);
     const canScroll = Office.context.requirements.isSetSupported('ExcelApiDesktop', '1.1');
     first.load(canScroll ? 'text,formulas,left,top,width,height' : 'text,formulas');
     sheet.activate();

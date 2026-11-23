@@ -28,8 +28,13 @@ export function mapKind(formula, left, above, valueType) {
     if (formula === above)
         return 'down';
     const syntax = formula.replace(/"(?:[^"]|"")*"/g, '""');
-    if (/\[[^\]]+\][^!+*/(),;]*!/.test(syntax))
-        return 'external';
+    // Brackets also occur in relative R1C1 references and table columns. A workbook
+    // token belongs to the sheet qualifier immediately preceding an exclamation mark.
+    const qualifiers = syntax.matchAll(/(?:^|[=+*/^&,:;<>(%\s-])('(?:[^']|'')*'|\[[^\]]+\][\p{L}\p{N}_.]+)!/gu);
+    for (const [, qualifier] of qualifiers) {
+        if (/\[[^\]]+\]/.test(qualifier))
+            return 'external';
+    }
     if (syntax.includes('!'))
         return 'sheet';
     // Only positively identify expressions made up of literals and operators.

@@ -12,6 +12,9 @@ test('map classifications use relative formula patterns and quoted strings',()=>
   assert.equal(mapKind(f,'','','Double'),'unique');
   assert.equal(mapKind("='[Prior.xlsx]Budget'!RC",'','','Double'),'external');
   assert.equal(mapKind("='Debt'!RC",'','','Double'),'sheet');
+  assert.equal(mapKind("=R[-1]C-'Debt'!RC",'','','Double'),'sheet');
+  assert.equal(mapKind("=Table1[Sales]-Debt!RC",'','','Double'),'sheet');
+  assert.equal(mapKind("=RC-[Prior.xlsx]Debt!RC",'','','Double'),'external');
   assert.equal(mapKind('="Book!X"','','','String'),'constant');
   assert.equal(mapKind('','','','Empty'),undefined);
 });

@@ -2,6 +2,8 @@
 
 Explore a formula with the keyboard. Control+Q lists its precedents and Control+Shift+Q lists its dependents. Up and Down activate each referenced sheet and select the relevant cell or range. Right follows a reference one level deeper. Left returns to the previous list at the step you left. Control+Shift+M toggles a formula map on the active sheet.
 
+**Arixcel parity is incomplete.** The [feature audit and desktop acceptance cases](PARITY.md) list the implemented behaviors, missing commands and open Mac checks.
+
 ## Run on a Mac
 
 1. Use Microsoft 365 desktop Excel for Mac with add-ins enabled and Node.js 22 or newer. The same portable files run on Intel and Apple silicon with the corresponding Node installation.
@@ -45,11 +47,11 @@ The on-sheet highlight is Excel’s native range selection. Each preview activat
 
 The map uses a snapshot of the active sheet. Toggle off and on to refresh after edits. The rules are saved with the workbook when you save a mapped sheet. Colors and enabled categories are editable in **Map colors** and take effect on the next application. Formula categories compare relative R1C1 formulas to the formula immediately above and to the left. Unique formulas can be marked as cross-sheet, external, or literal-only. The map preserves the cell’s base fill and removes its own conditional-format rules on the second toggle.
 
-The explorer uses one task pane. It traces one cell or one contiguous block in the active workbook and pages through all direct reference areas returned by Excel, 100 explorer rows at a time. The first 100 area values are prefetched. Later values load as you browse. The default view lists cell and range references. The optional formula tree parses common operators, parentheses, and function calls. Excel supplies values for the root and traced cells. Full intermediate-expression evaluation, in-tree editing, tracing into other workbooks, mapping grouped sheets, and version comparison are outside this build. Ctrl+Backspace is handled inside the explorer; the default return shortcut from the grid is Ctrl+Alt+B.
+The explorer uses one task pane. It traces a cell, a contiguous block or a disjoint worksheet selection in the active workbook and pages through all direct reference areas returned by Excel, 100 explorer rows at a time. The first 100 area values are prefetched. Later values load as you browse. The default view lists cell and range references. The optional formula tree parses common operators, parentheses, and function calls. Excel supplies values for the root and traced cells. Full intermediate-expression evaluation, in-tree editing, tracing into other workbooks, mapping grouped sheets, and version comparison are outside this build. Ctrl+Backspace is handled inside the explorer; the default return shortcut from the grid is Ctrl+Alt+B.
 
 ## Verification and source
 
-For development, run `npm ci`. Run `npm run build:portable` to rebuild the compiled pane and bundled localhost certificate helper. Run `npm test` to compile TypeScript and execute the Office adapter and navigation tests against a simulated Excel host. Run `npm run validate` to submit the development manifest to Microsoft's validator.
+For development, run `npm ci`. Run `npm run build:portable` to rebuild the compiled pane and bundled localhost certificate helper. Run `npm test` to compile TypeScript and execute the Office adapter and navigation tests against a simulated Excel host. Run `npx playwright install webkit` and `npm run test:browser` for the compiled pane’s keyboard test with a simulated Office host. Run `npm run validate` to submit the development manifest to Microsoft's validator.
 
 The included workbook has synthetic formulas and cached results. To regenerate it, install Python's XlsxWriter and run `python scripts/make_fixture.py` after `npm ci`. Development sideload metadata in the workbook points to this manifest.
 

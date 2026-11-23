@@ -4,14 +4,26 @@ permissions:
   contents: read
 jobs:
   test:
-    runs-on: macos-latest
-    timeout-minutes: 10
+    strategy:
+      fail-fast: false
+      matrix:
+        runner: [macos-26, macos-15-intel]
+    name: Desktop checks (${{ matrix.runner }})
+    runs-on: ${{ matrix.runner }}
+    timeout-minutes: 20
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
           node-version: 22
+      - name: Record macOS version and processor
+        run: |
+          sw_vers
+          uname -m
+      - run: bash -n "Start Formula Trace.command"
       - run: npm ci
       - run: npm run build:portable
       - run: npm test
+      - run: npx playwright install webkit
+      - run: npm run test:browser
       - run: git diff --exit-code -- public/build portable
